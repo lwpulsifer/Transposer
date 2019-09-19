@@ -44,7 +44,10 @@ class Transposer():
         for note in text_list:
             new = self.get_wraparound(sorted(Transposer.SEMITONES.keys()), self.get_note_dex(note), key_distance)
             if "b" in note: # We want to match the flat or sharp of the original note
-                new_note = new[1]
+                try:
+                    new_note = new[1]
+                except IndexError:
+                    new_note = new[0]
             else:
                 new_note = new[0]
             new_notes.append(new_note)
@@ -81,8 +84,7 @@ class Transposer():
             count += 1
             if fr_dex == len(Transposer.SEMITONES.keys()):
                 fr_dex = 0
-        print(count)
-        return count
+        return -1 * count
 
     def get_wraparound(self, itr, dex, addition):
         new_dex = dex + addition
@@ -94,5 +96,7 @@ class Transposer():
 
 if __name__ == '__main__':
     t = Transposer()
-    print(t.transpose(fr='C', to='Bb', text='CFEDBCEF'))
-    
+    print(t.transpose(fr='Bb', to='C', text='DGFECDFG'))
+    print(t.transpose(fr='F', to='C', text='EbGGFABb'))
+    print(t.transpose(fr='C', to='F', text='AbCCBbDEb'))
+    print(t.transpose(fr='C', to='Eb', text='BbFAbEbGDEbFFFFEEbEbEbC'))
