@@ -15,20 +15,35 @@ class Transposer():
         10: ["A#", "Bb"],
         11: ["B"]
     }
+    INSTRUMENTS = {
+        "French Horn": "F",
+        "Trumpet": "Bb",
+        "Clarinet": "Bb",
+        "Bass Clarinet": "Bb",
+        "Alto Saxophone": "Eb",
+        "Tenor Saxophone": "Bb",
+        "Baritone Saxophone": "Eb",
+        "Soprano Saxophone": "Bb",
+    }
 
-    def __init__(self, tokey=None, instrument=None, text=None):
+    def __init__(self, tokey=None, instrument=None, from_instrument=None, text=None):
         self.key = tokey
-        self.instrument = instrument
+        self.to_instrument = instrument
+        self.from_instrument = from_instrument
         self.text = text
     
     def transpose(self, fr=None, to=None, text=None):
         if to:
             key = to
-        else:
+        elif self.to_instrument:
+            key = Transposer.INSTRUMENTS.get(self.to_instrument, 'C')
+        else:    
             key = self.key
         if fr:
             frm = fr
-        else:
+        elif self.from_instrument:
+            frm = Transposer.INSTRUMENTS.get(self.from_instrument, 'C')
+        else:    
             frm = 'C'
         if text:
             return self.transpose_helper(frm, key, text)
@@ -36,14 +51,16 @@ class Transposer():
             return self.transpose_helper(frm, key, self.text)
         
     def transpose_helper(self, fr, to, text):
-        if not fr or not to or not text:
+        if not fr or not to:
             raise ValueError("No from key or to key")
+        if not text:
+            raise ValueError("No text to transpose")
         key_distance = self.get_semitone_distance(fr, to)
         text_list = list(self.processText(text))
         new_notes = []
         for note in text_list:
             new = self.get_wraparound(sorted(Transposer.SEMITONES.keys()), self.get_note_dex(note), key_distance)
-            if "b" in note: # We want to match the flat or sharp of the original note
+            if "b" in note or "b" in to: # We want to match the flat or sharp of the original note
                 try:
                     new_note = new[1]
                 except IndexError:
@@ -95,8 +112,9 @@ class Transposer():
         return Transposer.SEMITONES[itr[new_dex]]
 
 if __name__ == '__main__':
-    t = Transposer()
+    t = Transposer(instrument='French Horn', from_instrument="NA")
     print(t.transpose(fr='Bb', to='C', text='DGFECDFG'))
     print(t.transpose(fr='F', to='C', text='EbGGFABb'))
     print(t.transpose(fr='C', to='F', text='AbCCBbDEb'))
     print(t.transpose(fr='C', to='Eb', text='BbFAbEbGDEbFFFFEEbEbEbC'))
+    print(t.transpose(text="CDEFGAB"))
